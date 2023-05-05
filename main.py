@@ -7,11 +7,20 @@ import networkx as nx
 from nltk.stem import WordNetLemmatizer
 import igraph as ig
 import spacy
+import os
+import sys
+import random
 
 # load the English language model
 nlp = spacy.load('en_core_web_sm')
 
-tag = 'FL'
+tag = sys.argv[1]
+print(tag)
+
+try:
+    os.mkdir(f'cs{tag}')
+except:
+    pass
 
 '''
 # Create a lemmatizer object
@@ -50,10 +59,11 @@ regex = re.compile(f"cs\.{tag}")
 query = {"categories": regex}
 results = collection.find(query)
 
-'''
 # define regular expression to remove special characters and punctuation symbols
 regex = re.compile('[^a-zA-Z0-9\s]')
-'''
+
+empty_words = ['their applications', 'applications', 'application', 'a review', 'challenges', 'the application', 'examples', 'the importance', 'an application', 'a survey', 'a case study', 'a study', '-', 'technical report', 'a note', 'a characterization', 'a tool', 'a model', 'a framework', 'international workshop', 'implementation', 'a new approach', 'approach', 'specifications']
+
 
 # open the output file in write mode
 with open(f'cs{tag}/cs{tag}_links.txt', "w") as file:
@@ -61,10 +71,16 @@ with open(f'cs{tag}/cs{tag}_links.txt', "w") as file:
     # iterate through the results and tokenize and tag the titles
     for doc in results:
         title = doc["title"]
+        if random.randint(1, 50) == 20:
+            print(title)
 
         # apply NLP to extract noun phrases
         doc = nlp(title)
         noun_phrases = [chunk.text.lower().replace('(', '').replace(')', '').replace('\n', '') for chunk in doc.noun_chunks if chunk.root.pos_ not in ['PRON', 'AUX', 'DET', 'ADP', 'ADV', 'CONJ', 'CCONJ', 'INTJ', 'NUM', 'PART', 'PUNCT', 'SYM', 'SCONJ', 'VERB', 'X']]
+        noun_phrases = [regex.sub('', np) for np in noun_phrases] # remove special characters and punctuation symbols
+        noun_phrases = [np for np in noun_phrases if np]
+        noun_phrases = [' '.join(np.split()) for np in noun_phrases]
+        noun_phrases = [np.strip() for np in noun_phrases if np.strip() not in empty_words]
 
         #words = word_tokenize(title.lower()) # convert to lowercase and tokenize
         #words = [w for w in words if w not in stop_words] # remove stopwords
@@ -80,6 +96,7 @@ with open(f'cs{tag}/cs{tag}_links.txt', "w") as file:
             for w2 in noun_phrases[i+1:]:
                 file.write(w1 + " . " + w2 + "\n")
 
+print('making graph')
 # WHOLE GRAPH
 
 # create a new graph object
@@ -109,6 +126,8 @@ with open(f'cs{tag}/cs{tag}_links.txt', "r") as file:
 # write the graph to the output file in GML format
 nx.write_gml(graph, f'cs{tag}/cs{tag}_network.gml')
 
+print('making subgraph')
+
 # TOP 1000 NODES SUBGRAPH
 
 # load the graph from the input file
@@ -127,12 +146,12 @@ top_nodes = list(sorted_dict.keys())[:1000]
 subgraph = graph.subgraph(top_nodes)
 
 # write the subgraph to the output file in GML format
-nx.write_gml(subgraph, f'cs{tag}/cs{tag}_network_top_nodes.gml')
+nx.write_gml(subgraph, f'cs{tag}/cs{tag}_network.gml')
 
-# MOST IMPORTANT EDGES SUBRAPH: CURRENTLY NOT DONE
+print('removing weak links')
 
-'''
-g = ig.Graph.Read_GML(f"cs{tag}/cs{tag}_network_top_nodes.gml")
-g.delete_edges(g.es.select(weight_gt=1))
-ig.write(g, f"cs{tag}/cs{tag}_network_filtered.gml", format="gml")
-'''
+# MOST IMPORTANT EDGES SUBRAPH: CURRENTLY LT = 1
+
+g = ig.Graph.Read_GML(f"cs{tag}/cs{tag}_network.gml")
+g.delete_edges(g.es.select(weight_lt=1))
+ig.write(g, f"cs{tag}/cs{tag}_network.gml", format="gml")

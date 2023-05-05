@@ -1,7 +1,20 @@
-CR
-CL
-CG
-DC
-DM
-DS
-NE
+CC : Computational Complexity [OK]
+DM : Discrete Mathematics [OK]
+FL : Formal Languages and Automata Theory [OK]
+GT : Computer Science and Game Theory [OK]
+LG : Machine Learning [OK]
+LO : Logic in Computer Science [OK]
+CR : Cryptography and Security [OK]
+CL : Computation and Language [OK]
+CG : Computational Geometry [OK]
+DC : Distributed, Parallel and Cluster Computing [OK]
+DS : Data Structures and Algorithms [OK]
+NE : Neural and Evolutionary Computing [OK]
+CY : Computers and Society [OK]
+DB : Databases [OK]
+ET : Emerging Technologies [OK]
+HC : Human-Computer Interaction [OK]
+MA : Multiagent Systems [OK]
+SI : Social and Information Networks [OK]
+SY : Systems and Control [OK]
+
