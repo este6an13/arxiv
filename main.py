@@ -14,7 +14,9 @@ import random
 # load the English language model
 nlp = spacy.load('en_core_web_sm')
 
-tag = sys.argv[1]
+mode = int(sys.argv[1])
+tag = sys.argv[2]
+print(mode)
 print(tag)
 
 try:
@@ -55,9 +57,19 @@ tech_tags = ['NN', 'NNS', 'NNP', 'NNPS', 'JJ']
 '''
 
 # filter documents that have "cs.GT" in their "categories" attribute
-regex = re.compile(f"cs\.{tag}")
-query = {"categories": regex}
+regex = ''
+query = ''
+
+if mode == 0:
+    regex = re.compile(f"cs\.{tag}")
+    query = {"categories": regex}
+elif mode == 1:
+    terms_list = tag.split(",")
+    regex_list = [re.compile(term.strip(), re.IGNORECASE) for term in terms_list]
+    query = {"title": {"$in": regex_list}}
+
 results = collection.find(query)
+
 
 # define regular expression to remove special characters and punctuation symbols
 regex = re.compile('[^a-zA-Z0-9\s]')
